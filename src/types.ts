@@ -1,3 +1,4 @@
+import type { SvelteComponent, SvelteComponentTyped } from "svelte";
 
 export interface Link {
   label: string,
@@ -7,11 +8,14 @@ export interface Link {
 
 export interface ListContents {
   type: 'List',
-  items: Link[],
+  content: Link[],
 }
-export interface JSONContents {
+
+export type PaneProps = {content: any}
+export interface JSONContents<T extends SvelteComponentTyped<PaneProps> = any> {
   type: 'JSON',
-  content: any
+  content: any,
+  view?: T,
 }
 
 export type PaneContents = ListContents | JSONContents

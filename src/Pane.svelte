@@ -1,17 +1,35 @@
 <script lang="ts">
-import type { PaneContents } from "./types";
+import type { PaneContents, PaneProps } from "./types";
 import getContent from './store'
+import type { SvelteComponentTyped } from "svelte";
 
 export let url: string
 export let selectedUrl: string | null = null
 export let select: (url: string) => void
 
 let contents: PaneContents | null
-$: contents = getContent(url)
+let View: SvelteComponentTyped<PaneProps> | null
+let currentModeIdx: number
+let modes: ('null' | 'View' | 'List' | 'JSON')[]
+
+$: {
+  contents = getContent(url)
+  View = contents != null && contents.type === 'JSON' ? contents.view : null
+
+  modes = []
+  if (contents === null) modes.push('null')
+  else {
+    if (contents.type === 'JSON') modes.push('View')
+    modes.push(contents.type)
+  }
+
+  currentModeIdx = 0
+}
+
 
 const expand = (e: MouseEvent) => {
   const idx = parseInt((e.target! as HTMLElement).dataset.idx!)
-  const selected = contents!.items[idx]
+  const selected = contents!.content[idx]
   select(selected.url)
 }
 
@@ -72,18 +90,22 @@ header > *:last-child {
   {:else}
     <header>
       <span>{url}</span>
-      <span>{contents.type}</span>
+      <span style='cursor: pointer;' on:click={(e) => {
+        currentModeIdx = (currentModeIdx + 1) % modes.length
+      }}>{modes[currentModeIdx]}</span>
     </header>
 
     {#if contents.type === 'List'}
-      {#each contents.items as item, i}
+      {#each contents.content as item, i}
         <div
           class:selected="{item.url === selectedUrl}"
           on:click={expand}
           data-idx={i}
         >{item.label}</div>
       {/each}
-    {:else if contents.type === 'JSON'}
+    {:else if modes[currentModeIdx] === 'View' && View != null}
+      <View content={contents.content} />
+    {:else if modes[currentModeIdx] === 'JSON'}
       <pre>
         {JSON.stringify(contents.content, null, 2)}
       </pre>

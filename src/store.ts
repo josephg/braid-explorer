@@ -1,8 +1,9 @@
+import Temp from './views/Temp.svelte'
 import type { PaneContents } from "./types";
 
 const list = (url: string, children: string[]): PaneContents => ({
   type: 'List',
-  items: children.map(l => ({label: l, url: `${url}/${l}`}))
+  content: children.map(l => ({label: l, url: `${url}/${l}`}))
 })
 
 // '/': {
@@ -54,7 +55,8 @@ const docs: Record<string, PaneContents> = {
   },
   '/System/CPU/Temperature': {
     type: 'JSON',
-    content: {celcius: 77}
+    content: {celcius: 77},
+    view: Temp
   },
 
   '/Network': list('/Network', ["Seph's iPad", 'seph-freebsd', 'Unifi Controller']),
@@ -63,7 +65,7 @@ const docs: Record<string, PaneContents> = {
     'Status'
   ]),
 
-  '/null': {type: 'List', items: []}
+  '/null': {type: 'List', content: []}
 }
 
 
