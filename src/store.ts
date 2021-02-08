@@ -69,6 +69,6 @@ const docs: Record<string, PaneContents> = {
 }
 
 
-export default function getContent(url: string): PaneContents | null {
+export default async function getContent(url: string): Promise<PaneContents | null> {
   return docs[url] ?? null
 }

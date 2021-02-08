@@ -4,9 +4,6 @@ const optimize = process.env.NODE_ENV === 'production' ? {
   target: 'es2020'
 } : {}
 
-require('fs').writeFileSync('foo.json', JSON.stringify(optimize, null, 2))
-// setTimeout(() => console.log('optimize', optimize), 100)
-
 /** @type {import("snowpack").SnowpackUserConfig } */
 module.exports = {
   mount: {

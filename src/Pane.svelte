@@ -1,19 +1,17 @@
 <script lang="ts">
 import type { PaneContents, PaneProps } from "./types";
-import getContent from './store'
 import type { SvelteComponentTyped } from "svelte";
 
 export let url: string
+export let contents: PaneContents | null
 export let selectedUrl: string | null = null
 export let select: (url: string) => void
 
-let contents: PaneContents | null
 let View: SvelteComponentTyped<PaneProps> | null
 let currentModeIdx: number
 let modes: ('null' | 'View' | 'List' | 'JSON')[]
 
 $: {
-  contents = getContent(url)
   View = contents != null && contents.type === 'JSON' ? contents.view : null
 
   modes = []
@@ -32,8 +30,6 @@ const expand = (e: MouseEvent) => {
   const selected = contents!.content[idx]
   select(selected.url)
 }
-
-console.log('url', url)
 
 </script>
 

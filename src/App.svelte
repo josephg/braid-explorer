@@ -1,7 +1,11 @@
 <script lang='typescript'>
 import Pane from './Pane.svelte'
+import getContent from './store';
+import type { PaneContents } from './types';
 
-let stack: string[] = ['/']
+// This is pretty gross.
+let urls: string[] = ['/']
+let stack: Promise<PaneContents | null>[] = [getContent('/')]
 
 $: console.log('stack', stack)
 
@@ -18,9 +22,14 @@ $: console.log('stack', stack)
 </style>
 
 <div id='panecontainer'>
-	{#each stack as url, i}
-		<Pane url={url} select={(next) => {
-			stack = [...stack.slice(0, i+1), next]
-		}} selectedUrl={stack[i+1]} />
+	{#each stack as cPromise, i}
+		{#await cPromise}
+			Loading...
+		{:then contents}
+			<Pane contents={contents} select={(next) => {
+				urls = [...urls.slice(0, i+1), next]
+				stack = [...stack.slice(0, i+1), getContent(next)]
+			}} url={urls[i]} selectedUrl={urls[i+1]} />
+		{/await}
 	{/each}
 </div>
