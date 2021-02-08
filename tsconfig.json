@@ -1,5 +1,6 @@
 {
   "include": ["src", "types"],
+  // "extends": "@tsconfig/svelte/tsconfig.json",
   "compilerOptions": {
     "module": "esnext",
     "target": "esnext",
@@ -13,6 +14,7 @@
       //     "*": [".snowpack/types/*"]
       // More info: https://www.snowpack.dev/guides/streaming-imports
     },
+    "types": ["svelte", "@types/snowpack-env"],
     /* noEmit - Snowpack builds (emits) files, not tsc. */
     "noEmit": true,
     /* Additional Options */
