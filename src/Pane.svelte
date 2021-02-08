@@ -1,33 +1,43 @@
 <script lang="ts">
-import type { PaneContents, PaneProps } from "./types";
+import type { PaneContents, PaneProps, PaneStream } from "./types";
 import type { SvelteComponentTyped } from "svelte";
 
 export let url: string
-export let contents: PaneContents | null
-export let selectedUrl: string | null = null
+export let stream: PaneStream
+export let selectedUrl: string = 'unknown'
 export let select: (url: string) => void
 
+let contents: PaneContents
 let View: SvelteComponentTyped<PaneProps> | null
 let currentModeIdx: number
 let modes: ('null' | 'View' | 'List' | 'JSON')[]
 
+
 $: {
-  View = contents != null && contents.type === 'JSON' ? contents.view : null
-
-  modes = []
-  if (contents === null) modes.push('null')
-  else {
-    if (contents.type === 'JSON') modes.push('View')
-    modes.push(contents.type)
-  }
-
   currentModeIdx = 0
+
+  contents = $stream
+  console.log('contents', contents)
+
+  if (contents.type === 'null') {
+    modes = ['null']
+  } else {
+    View = contents.type === 'JSON' ? contents.view : null
+
+    modes = []
+    if (contents === null) modes.push('null')
+    else {
+      if (contents.type === 'JSON' && contents.view != null) modes.push('View')
+      modes.push(contents.type)
+    }
+  }
 }
 
 
 const expand = (e: MouseEvent) => {
+  if (contents.type !== 'List') return
   const idx = parseInt((e.target! as HTMLElement).dataset.idx!)
-  const selected = contents!.content[idx]
+  const selected = contents.content[idx]
   select(selected.url)
 }
 
@@ -99,12 +109,14 @@ header > *:last-child {
           data-idx={i}
         >{item.label}</div>
       {/each}
-    {:else if modes[currentModeIdx] === 'View' && View != null}
-      <View content={contents.content} />
-    {:else if modes[currentModeIdx] === 'JSON'}
-      <pre>
-        {JSON.stringify(contents.content, null, 2)}
-      </pre>
+    {:else if contents.type === 'JSON'}
+      {#if modes[currentModeIdx] === 'View' && View != null}
+        <View content={contents.content} />
+      {:else}
+        <pre>
+          {JSON.stringify(contents.content, null, 2)}
+        </pre>
+      {/if}
     {/if}
   {/if}
 </div>

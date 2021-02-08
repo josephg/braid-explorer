@@ -1,5 +1,7 @@
 import Temp from './views/Temp.svelte'
-import type { PaneContents } from "./types";
+import type { PaneContents, PaneStream } from "./types"
+import {subscribe} from '@josephg/braid-client'
+import { readable } from 'svelte/store'
 
 const list = (url: string, children: string[]): PaneContents => ({
   type: 'List',
@@ -16,7 +18,7 @@ const list = (url: string, children: string[]): PaneContents => ({
 //   ]
 // },
 const docs: Record<string, PaneContents> = {
-  '/': list('', ['System', 'Network', 'Projects']),
+  '/': list('', ['System', 'Network', 'Projects', 'demo']),
   '/System': list('/System', ['CPU', 'Processes', 'Netstat']),
 
   '/System/CPU': list('/System/CPU', ['Info', 'Temperature']),
@@ -65,10 +67,46 @@ const docs: Record<string, PaneContents> = {
     'Status'
   ]),
 
+  '/demo': {
+    type: 'List',
+    content: [{label: 'time', url: 'http://localhost:2001/time'}]
+  },
+
   '/null': {type: 'List', content: []}
 }
 
+export default async function getContent(url: string): Promise<PaneStream> {
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    console.log('subscribe!', url)
+    const {initialValue, stream} = await subscribe(url)
 
-export default async function getContent(url: string): Promise<PaneContents | null> {
-  return docs[url] ?? null
+    async function *s(): AsyncGenerator<PaneContents> {
+      for await (const {value} of stream) {
+        yield {
+          type: 'JSON',
+          content: value
+        }
+      }
+    }
+    return readable({
+      type: 'JSON',
+      content: initialValue,
+    }, set => {
+      let running = true
+      ;(async () => {
+        for await (const {value} of stream) {
+          console.log('got value', value)
+          set({type: 'JSON', content: value})
+        }
+      })()
+
+      return () => {
+        running = false
+        stream.return()
+      }
+    })
+  } else {
+    return docs[url] ? readable(docs[url], () => {})
+     : readable({type: 'null'}, () => {})
+  }
 }

@@ -1,11 +1,11 @@
 <script lang='typescript'>
 import Pane from './Pane.svelte'
 import getContent from './store';
-import type { PaneContents } from './types';
+import type { PaneStream } from './types';
 
 // This is pretty gross.
 let urls: string[] = ['/']
-let stack: Promise<PaneContents | null>[] = [getContent('/')]
+let stack: Promise<PaneStream>[] = [getContent('/')]
 
 $: console.log('stack', stack)
 
@@ -25,8 +25,8 @@ $: console.log('stack', stack)
 	{#each stack as cPromise, i}
 		{#await cPromise}
 			Loading...
-		{:then contents}
-			<Pane contents={contents} select={(next) => {
+		{:then stream}
+			<Pane stream={stream} select={(next) => {
 				urls = [...urls.slice(0, i+1), next]
 				stack = [...stack.slice(0, i+1), getContent(next)]
 			}} url={urls[i]} selectedUrl={urls[i+1]} />

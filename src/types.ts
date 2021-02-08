@@ -1,4 +1,5 @@
 import type { SvelteComponent, SvelteComponentTyped } from "svelte";
+import type { Readable } from "svelte/store";
 
 export interface Link {
   label: string,
@@ -18,4 +19,10 @@ export interface JSONContents<T extends SvelteComponentTyped<PaneProps> = any> {
   view?: T,
 }
 
-export type PaneContents = ListContents | JSONContents
+export type PaneContents = ListContents | JSONContents | {type: 'null'}
+
+export type PaneStream = Readable<PaneContents>
+// export type PaneStream = {
+//   initialValue: PaneContents,
+//   stream: AsyncGenerator<PaneContents>
+// }
