@@ -29,8 +29,10 @@ $: {
     else {
       if (contents.type === 'JSON' && contents.view != null) modes.push('View')
       modes.push(contents.type)
+      if (contents.type === 'List') modes.push('JSON')
     }
   }
+  console.log(modes)
 }
 
 
@@ -47,7 +49,7 @@ const expand = (e: MouseEvent) => {
 
 .container {
 	border-right: 1px solid black;
-	width: 200px;
+	width: 250px;
   min-width: 100px;
   overflow-y: auto;
 }
@@ -101,20 +103,20 @@ header > *:last-child {
       }}>{modes[currentModeIdx]}</span>
     </header>
 
-    {#if contents.type === 'List'}
-      {#each contents.content as item, i}
-        <div
-          class:selected="{item.url === selectedUrl}"
-          on:click={expand}
-          data-idx={i}
-        >{item.label}</div>
-      {/each}
-    {:else if contents.type === 'JSON'}
-      {#if modes[currentModeIdx] === 'View' && View != null}
+    {#if contents.type === 'List' || contents.type === 'JSON'}
+      {#if modes[currentModeIdx] === 'List'}
+        {#each contents.content as item, i}
+          <div
+            class:selected="{item.url === selectedUrl}"
+            on:click={expand}
+            data-idx={i}
+          >{item.label}</div>
+        {/each}
+      {:else if modes[currentModeIdx] === 'View' && View != null}
         <View content={contents.content} />
       {:else}
         <pre>
-          {JSON.stringify(contents.content, null, 2)}
+          {JSON.stringify(contents.content, null, 1)}
         </pre>
       {/if}
     {/if}
